@@ -93,9 +93,9 @@ RUN_CELLRANGER=1            # B: CellRanger: `cellranger-analysis`
 RUN_UPSTREAM=1              # C: Upstream: `upstream-analysis`
 RUN_INTEGRATIVE=1           # D: Integrative: `integrative-analysis`
 RUN_CLUSTER=1               # E: Cluster cell calling: `cluster-cell-calling`
-RUN_CELL_TYPES=1            # F: Integration with scRNA-seq: `cell-types-annotation`
-RUN_CELL_CONTAMINATION=0    # G: Remove contamination: `cell-contamination-removal-analysis`
-RUN_CLONE_PHYLOGENY=1       # H: Clone Phylogeny Analysis: `clone-phylogeny-analysis`
+RUN_CELL_CONTAMINATION=0    # F: Remove contamination: `cell-contamination-removal-analysis`
+RUN_CELL_TYPES=1            # G: Integration with scRNA-seq: `cell-types-annotation`
+RUN_CLONE_PHYLOGENY=0       # H: Clone Phylogeny Analysis: `clone-phylogeny-analysis`
 RUN_DE_GO=1                 # I: DE GO analysis: `de-go-analysis`
 RUN_RSHINY=1                # J: R/Shiny app: `rshiny-app`
 
@@ -199,8 +199,8 @@ B_DIR="${PROJECT_DIR}/analyses/cellranger-analysis"
 C_DIR="${PROJECT_DIR}/analyses/upstream-analysis"
 D_DIR="${PROJECT_DIR}/analyses/integrative-analysis"
 E_DIR="${PROJECT_DIR}/analyses/cluster-cell-calling"
-F_DIR="${PROJECT_DIR}/analyses/cell-types-annotation"
-G_DIR="${PROJECT_DIR}/analyses/cell-contamination-removal-analysis"
+F_DIR="${PROJECT_DIR}/analyses/cell-contamination-removal-analysis"
+G_DIR="${PROJECT_DIR}/analyses/cell-types-annotation"
 H_DIR="${PROJECT_DIR}/analyses/clone-phylogeny-analysis"
 I_DIR="${PROJECT_DIR}/analyses/de-go-analysis"
 J_DIR="${PROJECT_DIR}/analyses/rshiny-app"
@@ -215,8 +215,8 @@ count_enabled() {
   (( RUN_UPSTREAM ))         && ((n++))
   (( RUN_INTEGRATIVE ))      && ((n++))
   (( RUN_CLUSTER ))          && ((n++))
-  (( RUN_CELL_TYPES ))  && ((n++))
   (( RUN_CELL_CONTAMINATION ))     && ((n++))
+  (( RUN_CELL_TYPES ))  && ((n++))
   (( RUN_CLONE_PHYLOGENY ))            && ((n++))
   (( RUN_DE_GO ))            && ((n++))
   (( RUN_RSHINY ))           && ((n++))
@@ -305,30 +305,30 @@ else
   echo "[–/–] Cluster cell calling (E): SKIPPED"
 fi
 
-# F) Cell types annotation 
-if (( RUN_CELL_TYPES )); then
-  bump_step
-  echo "[${STEP}/${TOTAL_STEPS}] Submitting Cell types annotation (F)..."
-  F_DEP=""
-  [[ -n "${LAST_JOB}" ]] && F_DEP="done(${LAST_JOB})"
-  JOB_F=$(submit_job "${F_DIR}" "${F_DIR}/lsf-script.txt" "${F_DEP}" "cell-types-annotation")
-  echo "  F(Cell types annotation) = ${JOB_F} ${F_DEP:+(dep: ${F_DEP})}"
-  LAST_JOB="${JOB_F}"
-else
-  echo "[–/–] Cell types annotation (F): SKIPPED"
-fi
-
-# G) Cell contamination removal analysis
+# F) Cell contamination removal analysis
 if (( RUN_CELL_CONTAMINATION )); then
   bump_step
-  echo "[${STEP}/${TOTAL_STEPS}] Submitting Cell contamination removal analysis (G)..."
+  echo "[${STEP}/${TOTAL_STEPS}] Submitting Cell contamination removal analysis (F)..."
+  F_DEP=""
+  [[ -n "${LAST_JOB}" ]] && F_DEP="done(${LAST_JOB})"
+  JOB_F=$(submit_job "${F_DIR}" "${F_DIR}/lsf-script.txt" "${F_DEP}" "cell-contamination-removal-analysis")
+  echo "  F(Cell Contamination) = ${JOB_F} ${F_DEP:+(dep: ${F_DEP})}"
+  LAST_JOB="${JOB_F}"
+else
+  echo "[–/–] Cell contamination removal analysis (F): SKIPPED"
+fi
+
+# G) Cell types annotation 
+if (( RUN_CELL_TYPES )); then
+  bump_step
+  echo "[${STEP}/${TOTAL_STEPS}] Submitting Cell types annotation (G)..."
   G_DEP=""
   [[ -n "${LAST_JOB}" ]] && G_DEP="done(${LAST_JOB})"
-  JOB_G=$(submit_job "${G_DIR}" "${G_DIR}/lsf-script.txt" "${G_DEP}" "cell-contamination-removal-analysis")
-  echo "  G(Cell Contamination) = ${JOB_G} ${G_DEP:+(dep: ${G_DEP})}"
+  JOB_G=$(submit_job "${G_DIR}" "${G_DIR}/lsf-script.txt" "${G_DEP}" "cell-types-annotation")
+  echo "  G(Cell types annotation) = ${JOB_G} ${G_DEP:+(dep: ${G_DEP})}"
   LAST_JOB="${JOB_G}"
 else
-  echo "[–/–] Cell contamination removal analysis (G): SKIPPED"
+  echo "[–/–] Cell types annotation (G): SKIPPED"
 fi
 
 # H) Clone Phylogeny Analysis
@@ -384,8 +384,8 @@ printf "  B(CellRanger): %s\n"   "${RUN_CELLRANGER:+${JOB_B:-SKIPPED}}"
 printf "  C(Upstream) : %s\n"    "${RUN_UPSTREAM:+${JOB_C:-SKIPPED}}"
 printf "  D(Integrative): %s\n"  "${RUN_INTEGRATIVE:+${JOB_D:-SKIPPED}}"
 printf "  E(Cluster)  : %s\n"    "${RUN_CLUSTER:+${JOB_E:-SKIPPED}}"
-printf "  F(Cell types annotation): %s\n" "${RUN_CELL_TYPES:+${JOB_F:-SKIPPED}}"
-printf "  G(Cell contamination)  : %s\n"    "${RUN_CELL_CONTAMINATION:+${JOB_G:-SKIPPED}}"
+printf "  F(Cell contamination): %s\n" "${RUN_CELL_CONTAMINATION:+${JOB_F:-SKIPPED}}"
+printf "  G(Cell types annotation)  : %s\n"    "${RUN_CELL_TYPES:+${JOB_G:-SKIPPED}}"
 printf "  H(Clone Phylogeny)    : %s\n"    "${RUN_CLONE_PHYLOGENY:+${JOB_H:-SKIPPED}}"
 printf "  I(DE GO)    : %s\n"    "${RUN_DE_GO:+${JOB_I:-SKIPPED}}"
 printf "  J(R/Shiny)  : %s\n"    "${RUN_RSHINY:+${JOB_J:-SKIPPED}}"
