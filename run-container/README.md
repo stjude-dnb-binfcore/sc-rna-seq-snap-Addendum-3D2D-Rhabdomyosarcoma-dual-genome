@@ -1,6 +1,6 @@
 # Running the Container for scRNA-Seq Snap Workflow
 
-We provide a Dockerfile and Definition file that include all tools, packages, and dependencies necessary for running the sc-rna-seq-snap analysis modules. These are customized for `Rstudio/R v4.4.0` and `Seurat v4.4.0`.
+We provide a Dockerfile file that includes all tools, packages, and dependencies necessary for running the sc-rna-seq-snap analysis modules. These are customized for `Rstudio/R v4.4.0` and `Seurat v4.4.0`.
 
 
 ## Table of Contents
