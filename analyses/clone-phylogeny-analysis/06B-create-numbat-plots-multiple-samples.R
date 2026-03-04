@@ -6,6 +6,7 @@ suppressPackageStartupMessages({
   library(yaml)
   library(tidyverse)
   library(Seurat)
+  library(numbat)
 })
 
 #################################################################################
@@ -30,6 +31,7 @@ module_results_dir <- file.path(analysis_dir, "results")
 annotation_results_dir <- file.path(root_dir, "analyses", "cell-types-annotation", "results") 
 annotations_dir <- yaml$annotations_dir_rshiny_app
 annotations_all_results_dir <- file.path(annotation_results_dir, annotations_dir) 
+run_numbat_results_dir <- file.path(module_results_dir, "05-run-numbat") 
 
 # Input files
 seurat_obj_file <- dir(path = annotations_all_results_dir, pattern =  "seurat_obj.*\\.rds", full.names = TRUE, recursive = TRUE)
@@ -68,7 +70,7 @@ if (!dir.exists(numbat_results_dir)) {
 #sample_name <- c()
 
 #for (i in seq_along(df_allele_file)) {
-  # Extract sample name from the file path
+# Extract sample name from the file path
 #  sample_name <- c(sample_name, gsub("Create-", "", str_split_fixed(df_allele_file[i], "/", 16)[, 15]))
 #}
 
@@ -127,12 +129,31 @@ if (length(seurat_obj_list) != length(sample_name)) {
 
 for (i in seq_along(sample_name)){
   
+  run_numbat_file <- file.path(run_numbat_results_dir, sample_name[i]) 
+  print(run_numbat_file)
+  
+  nbt <- tryCatch({
+    Numbat$new(out_dir = run_numbat_file)},
+    error = function(e) {
+      print(paste0("Did not find complete numbat files for sample: ", sample_name[i]))
+      print(e$message)
+      return(NULL)
+    }
+  )
+  
+  if(is.null(nbt))
+  {
+    next
+  }
+  
+  #print(nbt)
+  
   # Read data per sample
   #cat("Processing for sample:", sample_name[i], "\n")
-
+  
   # seurat_obj
   #seurat_obj <- seurat_obj_list[[i]]
-
+  
   # Create directory to save html reports
   samples_plots_dir <- file.path(numbat_plots_dir, sample_name[i]) 
   if (!dir.exists(samples_plots_dir)) {
@@ -145,25 +166,25 @@ for (i in seq_along(sample_name)){
   
   
   rmarkdown::render('06A-create-numbat-plots.Rmd', clean = TRUE,
-                  output_dir = file.path(samples_plots_dir),
-                  output_file = c(paste('Report-', 'create-numbat-plots-', sample_name[i], '-', Sys.Date(), sep = '')),
-                  output_format = 'all',
-                  params = list(cell_type_label = yaml$cell_type_label_numbat,
-                                min_LLR_value = yaml$min_LLR_value_numbat,
-                                ct_palette_file = yaml$ct_palette_file_numbat,
-                                variable_palette_file = yaml$palette_variable_numbat,
-                                variable_plot = yaml$variable_numbat,
-                                root_dir = yaml$root_dir,
-                                PROJECT_NAME = yaml$PROJECT_NAME,
-                                PI_NAME = yaml$PI_NAME,
-                                TASK_ID = yaml$TASK_ID,
-                                PROJECT_LEAD_NAME = yaml$PROJECT_LEAD_NAME,
-                                DEPARTMENT = yaml$DEPARTMENT,
-                                LEAD_ANALYSTS = yaml$LEAD_ANALYSTS,
-                                GROUP_LEAD = yaml$GROUP_LEAD,
-                                CONTACT_EMAIL = yaml$CONTACT_EMAIL,
-                                PIPELINE = yaml$PIPELINE, 
-                                START_DATE = yaml$START_DATE,
-                                COMPLETION_DATE = yaml$COMPLETION_DATE))
+                    output_dir = file.path(samples_plots_dir),
+                    output_file = c(paste('Report-', 'create-numbat-plots-', sample_name[i], '-', Sys.Date(), sep = '')),
+                    output_format = 'all',
+                    params = list(cell_type_label = yaml$cell_type_label_numbat,
+                                  min_LLR_value = yaml$min_LLR_value_numbat,
+                                  ct_palette_file = yaml$ct_palette_file_numbat,
+                                  variable_palette_file = yaml$palette_variable_numbat,
+                                  variable_plot = yaml$variable_numbat,
+                                  root_dir = yaml$root_dir,
+                                  PROJECT_NAME = yaml$PROJECT_NAME,
+                                  PI_NAME = yaml$PI_NAME,
+                                  TASK_ID = yaml$TASK_ID,
+                                  PROJECT_LEAD_NAME = yaml$PROJECT_LEAD_NAME,
+                                  DEPARTMENT = yaml$DEPARTMENT,
+                                  LEAD_ANALYSTS = yaml$LEAD_ANALYSTS,
+                                  GROUP_LEAD = yaml$GROUP_LEAD,
+                                  CONTACT_EMAIL = yaml$CONTACT_EMAIL,
+                                  PIPELINE = yaml$PIPELINE, 
+                                  START_DATE = yaml$START_DATE,
+                                  COMPLETION_DATE = yaml$COMPLETION_DATE))
 }
 ################################################################################################################

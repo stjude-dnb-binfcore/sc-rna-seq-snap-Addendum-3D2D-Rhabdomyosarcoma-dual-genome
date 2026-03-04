@@ -40,7 +40,8 @@ input_dir=${module_dir}/results/02-prepare-files-for-pileup-and-phase
 mkdir -p ${input_dir}/sample_barcode
 
 # Define array with samples
-mapfile -t sample < <(grep '^ *-' ../../project_parameters.Config.yaml | sed 's/^ *- *//')
+mapfile -t sample < <(grep '^ *-' ../../project_parameters.Config.yaml | grep '[0-9]' | sed 's/^ *- *//')
+
 
 ##################
 # Check if the variable is an array by testing if it has elements

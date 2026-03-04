@@ -269,7 +269,7 @@ if (!is.null(condition_value2)) {
 ## Per `r condition_value3`
 
 ```{r find-markers-cell-type-condition3, echo=TRUE}
-if (!is.null(condition_value2)) {
+if (!is.null(condition_value3)) {
   Idents(seurat_obj) <- interaction(
   seurat_obj@meta.data[[cell_type_label_go]],
   seurat_obj@meta.data[[condition_value3]],
